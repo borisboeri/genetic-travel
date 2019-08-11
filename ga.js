@@ -28,7 +28,6 @@ function calculateFitness() {
       currentBest = population[i];
     }
 
-
     // This fitness function has been edited from the original video
     // to improve performance, as discussed in The Nature of Code 9.6 video,
     // available here: https://www.youtube.com/watch?v=HzaLIO9dLbA
@@ -47,21 +46,30 @@ function normalizeFitness() {
   }
 }
 
-function nextGeneration() {
+function nextGeneration(individual) {
   var newPopulation = [];
   for (var i = 0; i < population.length; i++) {
     var orderA = pickOne(population, fitness);
     // console.log('orderA -next gen',orderA);
     var orderB = pickOne(population, fitness);
     // console.log('orderB -next gen', orderB);
+
     var order = crossOver(orderA, orderB);
     // console.log('order',order);
     mutate(order, mutationRate);
+
+    let randomNb = random(1);
+
     newPopulation[i] = order;
+
+    if (randomNb > 0.6) {
+      var ran = floor(random(3, totalCities));
+      population[i] = individual.slice(0, ran);
+    }
   }
+
   population = newPopulation;
   // console.log('population',population);
-
 }
 
 function pickOne(list, prob) {
@@ -96,16 +104,15 @@ function crossOver(orderA, orderB) {
   return neworder;
 }
 
-
 function mutate(order, mutationRate) {
   for (var i = 0; i < totalCities; i++) {
     if (random(1) < mutationRate) {
-      var permutation = floor(random(5)) + 1
+      var permutation = floor(random(5)) + 1;
       // console.log(permutation);
       for (var j = 0; j < permutation; j++)
         var indexA = floor(random(order.length));
-        var indexB = (indexA + 1) % totalCities;
-        swap(order, indexA, indexB);
+      var indexB = (indexA + 1) % order.length;
+      swap(order, indexA, indexB);
     }
   }
 }

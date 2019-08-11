@@ -10,7 +10,7 @@
 // https://editor.p5js.org/codingtrain/sketches/EGjTrkkf9
 
 var cities = [];
-var totalCities = 10;
+var totalCities = 20;
 
 var popSize = 300;
 var population = [];
@@ -21,13 +21,30 @@ var bestEver;
 var currentBest;
 
 var scoreRange = 50;
-var mutationRate = 0.10;
+var mutationRate = 0.1;
 
 var statusP;
 
+function generateIndivual() {
+  var order = [];
+
+  for (var i = 0; i < totalCities; i++) {
+    // var s = floor(random(scoreRange));
+    // city={
+    //       coordinates:v,
+    //       points:s
+    //   };
+    // cities.push(city);
+
+    order[i] = i;
+  }
+
+  return shuffle(order);
+}
+
 function setup() {
   createCanvas(800, 800);
-  var order = [];
+
   for (var i = 0; i < totalCities; i++) {
     var v = createVector(random(width), random(height / 2));
     // var s = floor(random(scoreRange));
@@ -37,34 +54,48 @@ function setup() {
     //   };
     // cities.push(city);
     cities[i] = v;
-    order[i] = i;
   }
+
+  let order = generateIndivual();
 
   for (var i = 0; i < popSize; i++) {
     population[i] = shuffle(order);
-    // var ran = floor(random(2,totalCities));
-    // console.log('ran',ran);
-    // population[i] = population[i].slice(0, ran);
+    var ran = floor(random(3, totalCities));
+    console.log(ran);
+    population[i] = population[i].slice(0, ran);
+    // console.log(population);
   }
-  statusP = createP('').style('font-size', '32pt');
+  statusP = createP("").style("font-size", "32pt");
 
   // console.log(population);
 }
 
 function draw() {
   background(0);
-  // frameRate(1);
+  frameRate(20);
 
   // GA
   calculateFitness();
   normalizeFitness();
-  nextGeneration();
+
+  nextGeneration(generateIndivual());
 
   stroke(255);
   strokeWeight(4);
   noFill();
   beginShape();
   var startingPoint = bestEver[0];
+
+  for (let i = 0; i < cities.length; i++) {
+    ellipse(cities[i].x, cities[i].y, 16, 16);
+    textStyle(ITALIC);
+    strokeWeight(2);
+    textSize(25);
+    // text(cities[i].points,
+    //     cities[i].coordinates.x,
+    //     cities[i].coordinates.y + 30);
+    text(i, cities[i].x, cities[i].y + 30);
+  }
   for (var i = 0; i < bestEver.length; i++) {
     var n = bestEver[i];
     // vertex(cities[n].coordinates.x, cities[n].coordinates.y);
@@ -90,13 +121,22 @@ function draw() {
   noFill();
   endShape();
 
-
   translate(0, height / 2);
   stroke(255);
   strokeWeight(4);
   noFill();
   beginShape();
   var actualStartingPoint = currentBest[0];
+  for (let i = 0; i < cities.length; i++) {
+    ellipse(cities[i].x, cities[i].y, 16, 16);
+    textStyle(ITALIC);
+    strokeWeight(2);
+    textSize(25);
+    // text(cities[i].points,
+    //     cities[i].coordinates.x,
+    //     cities[i].coordinates.y + 30);
+    text(i, cities[i].x, cities[i].y + 30);
+  }
   for (var i = 0; i < currentBest.length; i++) {
     var n = currentBest[i];
     // vertex(cities[n].coordinates.x, cities[n].coordinates.y);
@@ -114,9 +154,6 @@ function draw() {
   endShape();
 
   // noLoop();
-
-
-
 }
 
 // function shuffle(a, num) {
@@ -127,40 +164,40 @@ function draw() {
 //   }
 // }
 
-
 function swap(a, i, j) {
   var temp = a[i];
   a[i] = a[j];
   a[j] = temp;
 }
 
-
 function calcDistance(points, order) {
   var sum = 0;
 
   //make a copy of the order and close it as it is a circle
-  var cycleOrder = order.slice()
+
+  var cycleOrder = order.slice();
   cycleOrder.push(cycleOrder[0]);
   // console.log('cycleOrder:',cycleOrder);
   // console.log('cities:', cities);
-  for (var i = 0; i < cycleOrder.length - 1 ; i++) {
+  for (var i = 0; i < cycleOrder.length - 1; i++) {
     var cityAIndex = cycleOrder[i];
     var cityA = points[cityAIndex];
     // console.log('cityA',cityA);
     var cityBIndex = cycleOrder[i + 1];
     var cityB = points[cityBIndex];
     // console.log('cityB',cityB);
-    var d = dist(cityA.x, cityA.y, cityB.x, cityB.y);
+    try {
+      var d = dist(cityA.x, cityA.y, cityB.x, cityB.y);
+    } catch {}
     // var d = dist(cityA.coordinates.x, cityA.coordinates.y, cityB.coordinates.x, cityB.coordinates.y);
     sum += d;
   }
   return sum;
 }
 
-
-function calcScore(points, order){
+function calcScore(points, order) {
   var sum = 0;
-  for (var i = 0; i < order.length -1 ; i++) {
+  for (var i = 0; i < order.length - 1; i++) {
     var cityIndex = order[i];
     var city = points[cityIndex];
     var p = city.points;
